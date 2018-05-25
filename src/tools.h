@@ -10,6 +10,15 @@ using namespace std;
 class Tools {
 public:
   /**
+  * Komer debug variables
+  */
+  VectorXd max_rmse;
+  VectorXd sum_rmse;
+  VectorXd ave_rmse;
+  int data_count;
+  
+
+  /**
   * Constructor.
   */
   Tools();
