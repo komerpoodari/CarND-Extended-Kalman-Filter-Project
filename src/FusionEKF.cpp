@@ -55,8 +55,6 @@ FusionEKF::~FusionEKF() {}
 
 void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
-  //working local variables
-  MatrixXd Qv, G, Gt;
 
   /*****************************************************************************
    *  Initialization
@@ -77,13 +75,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       /**
       Convert radar from polar to cartesian coordinates and initialize state.
       */
-      float ro = measurement_pack.raw_measurements_(0);
+      float rho = measurement_pack.raw_measurements_(0);
       float theta = measurement_pack.raw_measurements_(1);
-      float ro_dot = measurement_pack.raw_measurements_(2);
-      ekf_.x_(0) = ro * cos(theta); //px
-      ekf_.x_(1) = ro * sin(theta); //py
-      ekf_.x_(2) = ro_dot * cos(theta);
-	  ekf_.x_(3) = ro_dot * sin(theta);
+
+      ekf_.x_(0) = rho * cos(theta); //px
+      ekf_.x_(1) = rho * sin(theta); //py
+
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       /**
@@ -101,9 +98,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     //the initial transition matrix F_
     ekf_.F_ = MatrixXd(4, 4);
 	ekf_.F_ << 1, 0, 0, 0,
-			      0, 1, 0, 0,
-			      0, 0, 1, 0,
-			      0, 0, 0, 1;
+			   0, 1, 0, 0,
+			   0, 0, 1, 0,
+			   0, 0, 0, 1;
     
     //state covariance matrix P
 	ekf_.P_ = MatrixXd(4, 4);
@@ -200,6 +197,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   }
 
   // print the output
-  //cout << "x_ = " << ekf_.x_ << endl;
-  //cout << "P_ = " << ekf_.P_ << endl;
+  cout << "x_ = " << ekf_.x_ << endl;
+  cout << "P_ = " << ekf_.P_ << endl;
 }

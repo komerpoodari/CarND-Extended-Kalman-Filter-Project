@@ -7,22 +7,7 @@ using std::vector;
 
 
 Tools::Tools() 
-{
-  /**
-  * Komer debug variables
-  */
-  max_rmse = VectorXd(4);
-  max_rmse << -1.0, -1.0, -1.0, -1.0;
-  
-  sum_rmse = VectorXd(4);
-  sum_rmse << 0.0, 0.0, 0.0, 0.0;
-  
-  ave_rmse = VectorXd(4);
-  ave_rmse << 0.0, 0.0, 0.0, 0.0;
-  
-  data_count = 0;
-  
-  
+{  
 }
 
 Tools::~Tools() {}
@@ -74,28 +59,6 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 	//calculate the squared root
     rmse = rmse.array().sqrt();
     
-    // komer debug variables update
-    data_count++;
-    sum_rmse += rmse;
-    ave_rmse = sum_rmse / data_count;
-        
-    if (max_rmse(0) <= rmse(0))
-        max_rmse(0) = rmse(0);
-
-    if (max_rmse(1) <= rmse(1))
-        max_rmse(1) = rmse(1);
-
-    if (max_rmse(2) <= rmse(2))
-        max_rmse(2) = rmse(2);
-
-    if (max_rmse(3) <= rmse(3))
-        max_rmse(3) = rmse(3);
-
-    //print
-    if (data_count >= 499) {
-        cout << "data count: " << data_count << "; max_rmse: " << max_rmse << endl;
-        cout << "data count: " << data_count << "; ave_rmse: " << ave_rmse << endl;
-    }
 	//return the result
 	return rmse;
 }

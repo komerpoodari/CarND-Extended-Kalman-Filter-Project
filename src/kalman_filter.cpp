@@ -93,7 +93,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
       cout << "atan2 result: " << theta << endl;
   }
 
-  float rho_dot = (px*vx + py*vy) / rho;
+  float rho_dot = (px*vx + py*vy) / rho; // fixed the mistake here
   VectorXd z_pred = VectorXd(3);
   z_pred << rho, theta, rho_dot;
         
