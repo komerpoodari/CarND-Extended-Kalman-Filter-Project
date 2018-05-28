@@ -43,8 +43,8 @@ FusionEKF::FusionEKF() {
     * Set the process and measurement noises
   */
   //set the acceleration noise components
-  noise_ax = 3;
-  noise_ay = 3;
+  noise_ax = 9;
+  noise_ay = 9;
     
 }
 
@@ -71,23 +71,31 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     // first measurement
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
-    ekf_.x_ << 0.6, 0.6, 5.199937, 0.0;  // komer - the last two elements need to be experimented for best RMSE
+    ekf_.x_ << 1.0, 1.0, 0.0, 0.0;  // komer - the last two elements need to be experimented for best RMSE
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /**
       Convert radar from polar to cartesian coordinates and initialize state.
       */
-      float ro = measurement_pack.raw_measurements_[0];
-      float theta = measurement_pack.raw_measurements_[1];
-      ekf_.x_[0] = ro * cos(theta); //px
-      ekf_.x_[1] = ro * sin(theta); //py
+      float ro = measurement_pack.raw_measurements_(0);
+      float theta = measurement_pack.raw_measurements_(1);
+      float ro_dot = measurement_pack.raw_measurements_(2);
+      ekf_.x_(0) = ro * cos(theta); //px
+      ekf_.x_(1) = ro * sin(theta); //py
+      ekf_.x_(2) = ro_dot * cos(theta);
+	  ekf_.x_(3) = ro_dot * sin(theta);
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       /**
       Initialize state.
       */
-      ekf_.x_[0] = measurement_pack.raw_measurements_[0]; //px
-      ekf_.x_[1] = measurement_pack.raw_measurements_[1]; //py
+      ekf_.x_(0) = measurement_pack.raw_measurements_[0]; //px
+      ekf_.x_(1) = measurement_pack.raw_measurements_[1]; //py
+    }
+    
+    if (fabs(ekf_.x_(0)) < 0.0001 and fabs(ekf_.x_(1)) < 0.0001) {
+        ekf_.x_(0) = 0.0001;
+        ekf_.x_(1) = 0.0001;
     }
 
     //the initial transition matrix F_
@@ -138,32 +146,23 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   // update timestamp
   previous_timestamp_ = measurement_pack.timestamp_;
 
-  //1. Modify the F matrix so that the time is integrated
-  ekf_.F_(0,2) = dt;
-  ekf_.F_(1,3) = dt;
-  
-  G = MatrixXd(4, 2);
 
-  //2. Set the process covariance matrix Q
-  
-  //2.1 declare and initialize G
-  G << pow(dt, 2.0)/2.0, 0,
-		   0, pow(dt, 2.0)/2.0,
-		   dt, 0,
-		   0, dt;
-  // 2.2 compute G Transpose
-  Gt = G.transpose();
+ float dt_2 = dt * dt;
+ float dt_3 = dt_2 * dt;
+ float dt_4 = dt_3 * dt;
 
-  //2.2 declare and initialize Qv
-  Qv =MatrixXd(2, 2);
-  Qv << noise_ax, 0,
-	    0, noise_ay;
+ //Modify the F matrix so that the time is integrated
+ ekf_.F_(0, 2) = dt;
+ ekf_.F_(1, 3) = dt;
 
-  //2.3 compute Q
-  ekf_.Q_ = G * Qv * Gt; 
-	
-  //3. Call the Kalman Filter predict() function 
-  ekf_.Predict();
+ //set the process covariance matrix Q
+ ekf_.Q_ <<  dt_4/4*noise_ax, 0, dt_3/2*noise_ax, 0,
+			 0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay,
+			 dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
+			 0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
+
+ //3. Call the Kalman Filter predict() function 
+ ekf_.Predict();
 
   /*****************************************************************************
    *  Update

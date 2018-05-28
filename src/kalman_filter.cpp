@@ -44,7 +44,7 @@ void KalmanFilter::Update(const VectorXd &z) {
   VectorXd z_pred = H_ * x_;
   VectorXd y = z - z_pred;
   MatrixXd Ht = H_.transpose();
-  MatrixXd S = H_ * P_ * Ht + R_;
+  MatrixXd S = (H_ * P_ * Ht) + R_;
   MatrixXd Si = S.inverse();
   MatrixXd PHt = P_ * Ht;
   MatrixXd K = PHt * Si;
@@ -53,7 +53,7 @@ void KalmanFilter::Update(const VectorXd &z) {
   x_ = x_ + (K * y);
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
-  P_ = (I - K * H_) * P_;
+  P_ = (I - (K * H_)) * P_;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
@@ -62,12 +62,18 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     * update the state by using Extended Kalman Filter equations
   */
   //convert cartesian coordinates to polar
-  float px = x_[0];
-  float py = x_[1];
-  float vx = x_[2];
-  float vy = x_[3];
+  float px = x_(0);
+  float py = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
         
   float rho = sqrt(px*px + py*py);
+  
+  // ensure rho is not near zero
+  if (rho < 0.0001) {
+      cout << "UpdateEKF: rho near zero: " << rho << endl;
+      rho = 0.0001;
+  }
   
   /**
   In C++, atan2() returns values between -pi and pi. When calculating phi in 
@@ -87,7 +93,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
       cout << "atan2 result: " << theta << endl;
   }
 
-  float rho_dot = (px*vx + py+vy) / rho;
+  float rho_dot = (px*vx + py*vy) / rho;
   VectorXd z_pred = VectorXd(3);
   z_pred << rho, theta, rho_dot;
         
@@ -124,5 +130,5 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   x_ = x_ + (K * y);
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
-  P_ = (I - K * H_) * P_;
+  P_ = (I - (K * H_)) * P_;
 }

@@ -38,7 +38,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   */
   
 	VectorXd rmse(4);
-	rmse << 0,0,0,0;
+	rmse << 0.0,0.0,0.0,0.0;
 	
 
     // TODO: YOUR CODE HERE
@@ -54,52 +54,48 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
     if ( (est_size == 0 ) || (est_size != grd_size))
     {
         cout << "Estimations Size: " << est_size <<"; Ground Truth Size: " << grd_size << endl;
+        return rmse;
 	}
 	
-	else
-	{   //accumulate squared residuals
-	    for(int i=0; i < est_size; ++i){
-            // ... your code here
-            VectorXd residual = ground_truth [i] - estimations [i];
+	
+	//accumulate squared residuals
+	for(int i=0; i < est_size; ++i){
+        // ... your code here
+        VectorXd residual = ground_truth [i] - estimations [i];
             
-            residual = residual.array() * residual.array();
-            rmse += residual;
-	    }
-	    //cout << "se:" << endl << rmse << endl;
-	    //calculate thgroue mean
-	    // ... your code here
-	    rmse = rmse / est_size;
-	    //cout << "mse:" << endl << rmse << endl;
+        residual = residual.array() * residual.array();
+        rmse += residual;
+    }
+	    
+	//calculate mean
+	// ... your code here
+	rmse = rmse / est_size;
 
-	    //calculate the squared root
-	    // ... your code here
-	    rmse = rmse.array().sqrt();
-	    //cout << "rmse:" << endl << rmse << endl << endl;
+	//calculate the squared root
+    rmse = rmse.array().sqrt();
+    
+    // komer debug variables update
+    data_count++;
+    sum_rmse += rmse;
+    ave_rmse = sum_rmse / data_count;
         
-        // komer debug variables update
-        data_count++;
-        sum_rmse += rmse;
-        ave_rmse = sum_rmse / data_count;
-        
-     
-        if (max_rmse(0) <= rmse(0))
-            max_rmse(0) = rmse(0);
+    if (max_rmse(0) <= rmse(0))
+        max_rmse(0) = rmse(0);
 
-        if (max_rmse(1) <= rmse(1))
-            max_rmse(1) = rmse(1);
+    if (max_rmse(1) <= rmse(1))
+        max_rmse(1) = rmse(1);
 
-        if (max_rmse(2) <= rmse(2))
-            max_rmse(2) = rmse(2);
+    if (max_rmse(2) <= rmse(2))
+        max_rmse(2) = rmse(2);
 
-        if (max_rmse(3) <= rmse(3))
-            max_rmse(3) = rmse(3);
+    if (max_rmse(3) <= rmse(3))
+        max_rmse(3) = rmse(3);
 
-        //print
-        if (data_count >= 499) {
-            cout << "data count: " << data_count << "; max_rmse: " << max_rmse << endl;
-            cout << "data count: " << data_count << "; ave_rmse: " << ave_rmse << endl;
-        }
-	}
+    //print
+    if (data_count >= 499) {
+        cout << "data count: " << data_count << "; max_rmse: " << max_rmse << endl;
+        cout << "data count: " << data_count << "; ave_rmse: " << ave_rmse << endl;
+    }
 	//return the result
 	return rmse;
 }
@@ -119,33 +115,36 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
 
 	//TODO: YOUR CODE HERE 
 
-    //cout << "px: " << px << "; py:  " << py << endl;
 	//check division by zero
-	if ((fabs(px) < 0.00001) && (fabs(py) < 0.00001))
+    float px2_py2  =  px*px + py*py;
+   
+	if (px2_py2 < 0.0001)
 	{
-	    cout << "px: " << px << "; py: " << py << endl ;
-	}
-	//compute the Jacobian matrix
-	else
-	{
-	    //row 0
-	    Hj(0,0) = px / sqrt(px*px + py*py);
-	    Hj(0,1) = py / sqrt(px*px + py*py);
-	    Hj(0,2) = 0.0;
-	    Hj(0,3) = 0.0;
-	    
-	    //row 1
-	    Hj(1,0) = -py / (px*px + py*py);
-	    Hj(1,1) = px / (px*px + py*py);
-	    Hj(1,2) = 0.0;
-	    Hj(1,3) = 0.0;
-
-	    //row 2
-	    Hj(2,0) = (py * (vx*py - vy*px)) / pow((px*px + py*py), 1.5);
-	    Hj(2,1) = (px * (vy*px - vx*py)) / pow((px*px + py*py), 1.5);
-	    Hj(2,2) = Hj(0,0);
-	    Hj(2,3) = Hj(0,1);
+	    cout << "px2_py2: " << px2_py2 << endl ;
+        px2_py2 = 0.0001;
 	}
 	
+	float px2_py2_05 = sqrt(px2_py2);
+    float px2_py2_15 = pow(px2_py2, 3.0/2.0);
+   //compute the Jacobian matrix
+
+	//row 0
+	Hj(0,0) = px / px2_py2_05;
+	Hj(0,1) = py / px2_py2_05;
+	Hj(0,2) = 0.0;
+	Hj(0,3) = 0.0;
+	    
+	//row 1
+	Hj(1,0) = -py / px2_py2;
+	Hj(1,1) = px / px2_py2;
+	Hj(1,2) = 0.0;
+	Hj(1,3) = 0.0;
+
+	//row 2
+	Hj(2,0) = (py * (vx*py - vy*px)) / px2_py2_15;
+	Hj(2,1) = (px * (vy*px - vx*py)) / px2_py2_15;
+	Hj(2,2) = Hj(0,0);
+	Hj(2,3) = Hj(0,1);
+
 	return Hj;
 }
