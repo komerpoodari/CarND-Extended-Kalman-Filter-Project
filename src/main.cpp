@@ -39,10 +39,12 @@ int main()
   vector<VectorXd> ground_truth;
   
 
+
   h.onMessage([&fusionEKF,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
+
 
     if (length && length > 2 && data[0] == '4' && data[1] == '2')
     {
@@ -107,7 +109,16 @@ int main()
     	  ground_truth.push_back(gt_values);
           
           //Call ProcessMeasurment(meas_package) for Kalman filter
-    	  fusionEKF.ProcessMeasurement(meas_package);    	  
+          
+          // komer's change
+              //komer's variables; at least one of the following should be true;
+            bool use_laser_ = true;
+            bool use_radar_ = true;
+          if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
+                fusionEKF.ProcessMeasurement(meas_package);   
+          } else if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
+                fusionEKF.ProcessMeasurement(meas_package);   
+          }
 
     	  //Push the current estimated x,y positon from the Kalman filter's state vector
 
