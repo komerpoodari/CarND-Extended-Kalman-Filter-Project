@@ -84,11 +84,12 @@ I did a quick experiment with Vx and Vy initialized close to ground truths. The 
 
 ### Observation 5: Observations with different process noise values
 I guess the optimum values also depend on the quality of measurement environment.
+
  |Num|Noise_ax|Noise_ay|Initial (vx, vy)|Mode|Dataset|RMSE-Px|RMSE-Py|RMSE-Vx|RMSE-Vy|
  |:-:|:------:|:------:|:--------------:|:--:|:-----:|:-----:|:-----:|:-----:|:-----:|
  |1  |   4    |   4    |     (0,0)      | L+R|   1   | 0.1130| 0.1021| 0.4920| 0.5143|
  |2  |   9    |   9    |     (0,0)      | L+R|   1   | 0.0973| 0.0855| 0.4513| 0.4399|
- |4  |  25    |   25   |     (0,0)      | L+R|   1   | 0.0898| 0.0844| 0.4428| 0.4012|
+ |3  |  25    |   25   |     (0,0)      | L+R|   1   | 0.0898| 0.0844| 0.4428| 0.4012|
  |4  |  36    |   36   |     (0,0)      | L+R|   1   | 0.0908| 0.0892| 0.4922| 0.6660|
  |5  |   4    |   4    |     (0,0)      | L+R|   2   | 0.0814| 0.1219| 0.5006| 0.5695|
  |6  |   9    |   9    |     (0,0)      | L+R|   2   | 0.0726| 0.0967| 0.4579| 0.4966|
