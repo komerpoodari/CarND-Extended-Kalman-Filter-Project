@@ -1,5 +1,12 @@
 # Extended Kalman Filter Project Starter Code
 Self-Driving Car Engineer Nanodegree Program
+This file is updated based on the assignment submission.
+
+[//]: # (Image References)
+//]: # (Image References)
+[image1]: ./images/d1-nax_9-nay_9-LR.png
+[image2]: ./images/d2-nax_9-nay_9-LR.png
+
 
 In this project you will utilize a kalman filter to estimate the state of a moving object of interest with noisy lidar and radar measurements. Passing the project requires obtaining RMSE values that are lower than the tolerance outlined in the project rubric. 
 
@@ -8,6 +15,87 @@ This project involves the Term 2 Simulator which can be downloaded [here](https:
 This repository includes two files that can be used to set up and install [uWebSocketIO](https://github.com/uWebSockets/uWebSockets) for either Linux or Mac systems. For windows you can use either Docker, VMware, or even [Windows 10 Bash on Ubuntu](https://www.howtogeek.com/249966/how-to-install-and-use-the-linux-bash-shell-on-windows-10/) to install uWebSocketIO. Please see [this concept in the classroom](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/16cf4a78-4fc7-49e1-8621-3450ca938b77) for the required version and installation scripts.
 
 Once the install for uWebSocketIO is complete, the main program can be built and run by doing the following from the project top directory.
+
+## Relevant Implementation Details.
+This section describes the files modified / extended to implement the Extended Kalman filter.
+
+### `main.cpp`
+Two boolean variables `use_radar_` and `use_laser_` are defined and initialized to control whether data from both, laser and radar or individual sensors to be processed.
+These variables give flexibility to debug, test and observe the RMSE related to indivual sensor processing as well as the improvement upon sensor fusion, which is the main advantage of Kalman Filter.
+
+### `FusionEKF.cpp`
+This file contains main sensor data processing objects and associated functions. The main implementation logic includes the following.
+1. Variables and matrices initialization including (x, F, H_laser, H_radar, R_laser, R_radar, noise parameters, etc.)
+2. Handling first frame with appropriate position values assignment
+3. Updating F and Q matrices based on elapsed time between measurements, in prediction step
+4. Invoking relevant update step as per sensor
+
+### `kalman_filter.cpp`
+This file implements Extended Kalman filter class with `Predict()` and `Update()` functions. There is a separate `Update()` function for each sensor.
+There are two important items were taken care.
+1. Avoid division by zero: Ensure that position values are non_zero (atleast one of the position coordinate either px or py shall be non_zero) to avoid division by zero.
+2. Normalize Angles: The angle part of  y (difference between measurement and prediction) shall be normalized between +pi and -pi for correct RMSE value computation.
+
+Rest of the implementation is taken from class quizzes.
+
+### `tools.cpp`
+This file contains essentially functions to compute Jacobian for radar data processing and RMSE error computation.
+
+
+## Buid
+I used Windows Linux Subsystem for Ubuntu environment and associated instructions to build the program and to ensure communication between simulator and the EKF program.
+
+
+## Observations
+I exercised the implementation in various scenarios as described in this section.
+
+### Observation 1:  Data set 1, with sensor fusion (laser + radar); noise_ax = 9; noise_ay = 9
+
+The RMSE values observed were well within the limits of RMSE <= [Px:.11, Py:.11, Vx:0.52, Vy:0.52], i.e. ** [Px:0.0964	Py:0.0853	Vx:0.4154	Vy:0.4316]**, as captured in the following picture.
+![alt text][image1]
+
+### Observation 2:  Data set 2, with sensor fusion (laser + radar); noise_ax = 9; noise_ay = 9
+Similar to the Observation 1, the RMSE values are well below the specified limits for Data set 2 as well.
+![alt text][image2]
+
+### Observation 3: Observations with Fusion (Laser (R) + Radar (R)), Laser only ('L') and  Radar only ('R').
+I observed three combinations of RMSE measurement process with L, R and Fusion (L+R).  The observations are captured in the following table.
+|Num|Noise_ax|Noise_ay|Initial (vx, vy)|Mode (L, R, L+R)|Dataset|RMSE-Px|RMSE-Py|RMSE-Vx|RMSE-Vy|
+|1|9|9|(0,0)|L+R|1|0.0974|0.0855|0.4517|0.4407|
+|2|9|9|(0,0)|L|1|0.1838|0.1542|0.6051|0.4858|
+|3|9|9|(0,0)|R|1|0.2323|0.3354|0.6178|0.6786|
+|4|9|9|(0,0)|L+R|2|0.0726|0.0967|0.4579|0.4966|
+|5|9|9|(0,0)|L|2|0.1673|0.1568|0.6063|0.4955|
+|6|9|9|(0,0)|R|2|0.2415|0.3373|0.6025|0.7565|
+
+
+### Observation 4: Observations with Fusion with differenent Vx and Vy initialization.
+I did a quick experiment with Vx and Vy initialized close to ground truths. The RMSE went down. A priori knowledge about approximate velocity of object would be helpful.
+
+
+|1|9|9|(0,0)|L+R|1|0.0974|0.0855|0.4517|0.4407|
+|2|9|9|(1,1)|L+R|1|0.0964|0.0853|0.4154|0.4316|
+|3|9|9|(5.19,0)|L+R|1|0.0945|0.0848|0.3305|0.4097|
+
+### Observation 5: Observations with different acceleration noise values
+I did a quick experiment with Vx and Vy initialized close to ground truths. The RMSE went down. A priori knowledge about approximate velocity of object would be helpful.
+Not much helpful. I guess the noise values have to be provided by equipment vendors. I guess the optimum values also depend on the quality of environment.
+|Num|Noise_ax|Noise_ay|Initial(vx, vy)|Mode (L, R, L+R)|Dataset|RMSE-Px|RMSE-Py|RMSE-Vx|RMSE-Vy|
+|1|4|4|(0,0)|L+R|1|0.1130|0.1021|0.4920|0.5143|
+|2|9|9|(0,0)|L+R|1|0.0974|0.0855|0.4517|0.4407|
+|3|16|16|(0,0)|L+R|1|0.0921|0.0832|0.4419|0.4105|
+|4|25|25|(0,0)|L+R|1|0.0898|0.0844|0.4428|0.4012|
+|4|36|36|(0,0)|L+R|1|0.0908|0.0892|0.4922|0.6660|
+|5|4|4|(0,0)|L+R|2|0.0814|0.1219|0.5006|0.5695|
+|6|9|9|(0,0)|L+R|2|0.0726|0.0967|0.4579|0.4966|
+|7|16|16|(0,0)|L+R|2|0.0723|0.0890|0.4484|0.4678|
+|8|25|25|(0,0)|L+R|2|0.7360|0.0868|0.4502|0.4578|
+|9|36|36|(0,0)|L+R|2|0.0752|0.0869|0.4574|0.4596|
+
+Overal, this assignment offered me good grasp the implmentation of EKF and helps further understanding theory behind.
+
+
+## General build instrctions 
 
 1. mkdir build
 2. cd build
