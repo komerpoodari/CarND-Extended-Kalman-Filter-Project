@@ -50,7 +50,7 @@ I exercised the implementation in various scenarios as described in this section
 
 ### Observation 1:  Data set 1, with sensor fusion (laser + radar); noise_ax = 9; noise_ay = 9
 
-The RMSE values observed were well within the limits of RMSE <= (Px:.11, Py:.11, Vx:0.52, Vy:0.52), i.e. **(Px:0.0964	Py:0.0853	Vx:0.4154	Vy:0.4316)**, as captured in the following picture.
+The RMSE values observed were well within the limits of RMSE <= (Px:.11, Py:.11, Vx:0.52, Vy:0.52), i.e. **(Px:0.0973, Py:0.0855, Vx:0.4513, Vy:0.4399)**, as captured in the following picture.
 ![alt text][image1]
 
 ### Observation 2:  Data set 2, with sensor fusion (laser + radar); noise_ax = 9; noise_ay = 9
@@ -59,10 +59,12 @@ Similar to the Observation 1, the RMSE values are well below the specified limit
 
 ### Observation 3: Observations with Fusion (Laser (R) + Radar (R)), Laser only ('L') and  Radar only ('R').
 I observed three combinations of RMSE measurement process with L, R and Fusion (L+R).  The observations are captured in the following table.
+As expected the RMSE numbers are the best (lowest) for fusion, which is the advantage of Kalman filter.
+Laser performed better than Radar in single sensor processing, as expected.
 
  |Num|Noise_ax|Noise_ay|Initial (vx, vy)|Mode|Dataset|RMSE-Px|RMSE-Py|RMSE-Vx|RMSE-Vy|
  |:-:|:------:|:------:|:--------------:|:--:|:-----:|:-----:|:-----:|:-----:|:-----:|
- |1  |    9   |   9    |      (0,0)     | L+R|   1   | 0.0974| 0.0855| 0.4517| 0.4407|
+ |1  |    9   |   9    |      (0,0)     | L+R|   1   | 0.0973| 0.0855| 0.4513| 0.4399|
  |2  |    9   |   9    |      (0,0)     |  L |   1   | 0.1838| 0.1542| 0.6051| 0.4858|
  |3  |    9   |   9    |      (0,0)     |  R |   1   | 0.2323| 0.3354| 0.6178| 0.6786|
  |4  |    9   |   9    |      (0,0)     | L+R|   2   | 0.0726| 0.0967| 0.4579| 0.4966|
@@ -75,7 +77,7 @@ I did a quick experiment with Vx and Vy initialized close to ground truths. The 
 
  |Num|Noise_ax|Noise_ay|Initial (vx, vy)|Mode|Dataset|RMSE-Px|RMSE-Py|RMSE-Vx|RMSE-Vy|
  |:-:|:------:|:------:|:--------------:|:--:|:-----:|:-----:|:-----:|:-----:|:-----:|
- |1  |    9   |   9    |      (0,0)     | L+R|   1   | 0.0974| 0.0855| 0.4517| 0.4407|
+ |1  |    9   |   9    |      (0,0)     | L+R|   1   | 0.0973| 0.0855| 0.4513| 0.4399|
  |2  |    9   |   9    |      (1,1)     | L+R|   1   | 0.0964| 0.0853| 0.4154| 0.4316|
  |3  |    9   |   9    |    (5.19,0)    | L+R|   1   | 0.0945| 0.0848| 0.3305| 0.4097|
 
@@ -85,7 +87,7 @@ I guess the optimum values also depend on the quality of measurement environment
  |Num|Noise_ax|Noise_ay|Initial (vx, vy)|Mode|Dataset|RMSE-Px|RMSE-Py|RMSE-Vx|RMSE-Vy|
  |:-:|:------:|:------:|:--------------:|:--:|:-----:|:-----:|:-----:|:-----:|:-----:|
  |1  |   4    |   4    |     (0,0)      | L+R|   1   | 0.1130| 0.1021| 0.4920| 0.5143|
- |2  |   9    |   9    |     (0,0)      | L+R|   1   | 0.0974| 0.0855| 0.4517| 0.4407|
+ |2  |   9    |   9    |     (0,0)      | L+R|   1   | 0.0973| 0.0855| 0.4513| 0.4399|
  |4  |  25    |   25   |     (0,0)      | L+R|   1   | 0.0898| 0.0844| 0.4428| 0.4012|
  |4  |  36    |   36   |     (0,0)      | L+R|   1   | 0.0908| 0.0892| 0.4922| 0.6660|
  |5  |   4    |   4    |     (0,0)      | L+R|   2   | 0.0814| 0.1219| 0.5006| 0.5695|
